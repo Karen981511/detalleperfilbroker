@@ -4,7 +4,7 @@
 	include_once('../libs/CloudWS_Mobile_Library.php');
 	include_once('modal_alta_producto.php');
 	if (!empty($_POST['id_perfil'])) {
-		//viene del detalle de los perfiles 
+		//viene del detalle de los perfiles para poder agregar
 		/*zonas*/
 		$query = "SELECT pk_zon, zon_nombre FROM gv_zona WHERE fk_suc = 1
 		order by zon_nombre asc";
@@ -33,7 +33,6 @@
 		//tipo de inmueble 
 		$query = "SELECT pk_tip, tip_nombre FROM gv_tipo order by tip_nombre asc";
 		$db->setQuery($query);
-
 		$res_tip = $db->loadObjectList();
 	}else{
 		//viene del detalle del asesor 
@@ -49,7 +48,7 @@
 		$db->bind(":id", $_POST['id_asesor']);
 		$query_perfiles = $db->loadObjectList();
 
-		/*tipo de perfiles*/
+		/*tipo de perfiles en grupo*/
 		$query = "SELECT * FROM gv_perfiles_broker WHERE id_asesor =:id and identificador = 2 and eliminado = 0
 		group by id_zona order by id_zona asc";
 		$db->setQuery($query);
@@ -73,16 +72,20 @@
 		$db->bind(":id", $_POST['id_asesor']);
 		$asesor = $db->loadObject();
 
-
-
-
 		//tipo de inmueble 
 		$query = "SELECT pk_tip, tip_nombre FROM gv_tipo order by tip_nombre asc";
 		$db->setQuery($query);
-
 		$res_tip = $db->loadObjectList();
 		
 	}
+	//rangos de precio de venta 
+	$query = "SELECT * FROM gv_generic_catalog_details WHERE IdSimpleCatalog = 51";
+	$db->setQuery($query);
+	$lista_rangos_venta = $db->loadObjectList();
+	//rangos de precio renta
+	$query = "SELECT * FROM gv_generic_catalog_details WHERE IdSimpleCatalog = 52";
+	$db->setQuery($query);
+	$lista_rangos_renta = $db->loadObjectList();
 	
 
  ?>
@@ -211,6 +214,17 @@
 								            	
 							        		</div>
 						    			</div>
+						    			<!-- SELECT PARA LA LISTA DE RANGOS DE PRECIOS-->
+						    			<div class="form-group">
+						    				<div class="col-md-12">
+						    					<select name="rango_select_venta" id="rango_select_venta" class="form-control input-sm select2me" data-id="<?php echo $lista_zonas->id ?>">
+								                    <option value="">----- Selecciona Precio -----</option>
+								                    <?php foreach ($lista_rangos_venta as $key => $value) { ?>
+								                        <option data-desde="<?=$value->Name_?>" data-hasta="<?=$value->Description?>" value="<?=$value->Id?>"> <?=$value->Name_?> -  <?=$value->Description?></option>
+								                    <?php } ?>
+								                </select>
+						    				</div>
+						    			</div>
 						            	<div class="col-xl-6 col-lg-12 col-md-12 col-sm-12 col-12 form-group">Desde: 
 						                    <div class="input-group">
 						                            <span class="input-group-addon">
@@ -219,7 +233,7 @@
 						                        <input name="proPreciode"
 						                        	   data-campo="rango_desde_venta"
 						                        	   data-id="<?php echo $lista_zonas->id ?>"
-						                               class="form-control campo v-precio"
+						                               class="form-control campo v-precio rango_desde_venta_<?=$lista_zonas->id?>"
 						                               maxlength="14"
 						                               <?php echo $lista_zonas->id_venta == 1 ? '' : 'disabled = "true"'; ?>
 						                               value="<?php echo $lista_zonas->id_venta == 1 ? number_format($lista_zonas->rango_desde_venta) : 0; ?>"
@@ -234,7 +248,7 @@
 						                        <input name="proPreciohasta"
 						                        	   data-campo="rango_hasta_venta"
 						                        	   data-id="<?php echo $lista_zonas->id ?>"
-						                               class="form-control campo v-precio"
+						                               class="form-control campo v-precio rango_hasta_venta_<?=$lista_zonas->id?>"
 						                               maxlength="14"
 						                               <?php echo $lista_zonas->id_venta == 1 ? '' : 'disabled = "true"'; ?>
 						                               value="<?php echo $lista_zonas->id_venta == 1 ? number_format($lista_zonas->rango_hasta_venta) : 0; ?>"
@@ -256,6 +270,17 @@
 							                	Renta
 							            	</label>
 						      			</div>
+						      			<!-- SELECT PARA LA LISTA DE RANGOS DE PRECIOS-->
+						    			<div class="form-group">
+						    				<div class="col-md-12">
+						    					<select name="rango_select_renta" id="rango_select_renta" class="form-control input-sm select2me" data-id="<?php echo $lista_zonas->id ?>">
+								                    <option value="">----- Selecciona Precio -----</option>
+								                    <?php foreach ($lista_rangos_renta as $key => $value) { ?>
+								                        <option data-desde="<?=$value->Name_?>" data-hasta="<?=$value->Description?>" value="<?=$value->Id?>"> <?=$value->Name_?> -  <?=$value->Description?></option>
+								                    <?php } ?>
+								                </select>
+						    				</div>
+						    			</div>
 						            	<div class="col-xl-6 col-lg-12 col-md-12 col-sm-12 col-12 form-group">Desde: 
 						                    <div class="input-group">
 						                            <span class="input-group-addon">
@@ -264,7 +289,7 @@
 						                        <input name="proPreciode"
 						                        	   data-campo="rango_desde_renta"
 						                        	   data-id="<?php echo $lista_zonas->id ?>"
-						                               class="form-control campo v-precio"
+						                               class="form-control campo v-precio rango_desde_renta_<?=$lista_zonas->id?>"
 						                               maxlength="14"
 						                               <?php echo $lista_zonas->id_renta == 1 ? '' : 'disabled = "true"'; ?>
 						                               value="<?php echo $lista_zonas->id_renta == 1 ? number_format($lista_zonas->rango_desde_renta) : 0; ?>"
@@ -280,7 +305,7 @@
 						                        <input name="proPreciohasta"
 						                        	   data-campo="rango_hasta_renta"
 						                        	   data-id="<?php echo $lista_zonas->id ?>"
-						                               class="form-control campo v-precio"
+						                               class="form-control campo v-precio rango_hasta_renta_<?=$lista_zonas->id?>"
 						                               maxlength="14"
 						                               <?php echo $lista_zonas->id_renta == 1 ? '' : 'disabled = "true"'; ?>
 						                               value="<?php echo $lista_zonas->id_renta == 1 ? number_format($lista_zonas->rango_hasta_renta) : 0; ?>"
@@ -373,8 +398,9 @@
 		</div>
     </div>
 </div>
-
 <script type="text/javascript">
+	$('.select2me').select2();
+
 	jQuery(document).ready(function () 
 		{
 		    $('.v-precio').priceFormat({
@@ -518,6 +544,25 @@
 		        }
 		    }); 
 	    });
+	    $('#rango_select_venta').change(function(){
+	    	var desde = $('option:selected', this).data("desde");
+	    	var hasta = $('option:selected', this).data("hasta");
+	    	var id = $(this).data('id');
+	    	$('.rango_desde_venta_'+id).val(desde).change();
+	    	$('.rango_hasta_venta_'+id).val(hasta).change();
+	    	console.log(desde);
+	    	console.log(hasta);
+	    	console.log(id);
+
+	    	
+	    });
+	    $('#rango_select_renta').change(function(){
+	    	var desde = $('option:selected', this).data("desde");
+	    	var hasta = $('option:selected', this).data("hasta");
+	    	var id = $(this).data('id');
+	    	$('.rango_desde_renta_'+id).val(desde).change();
+	    	$('.rango_hasta_renta_'+id).val(hasta).change();
+	    });
 	    $('.btneliminar').click(function(){
 	        //
 	        $.ajax({
@@ -628,5 +673,4 @@
 		vertical-align: bottom!important;
 
 	}
-
 </style>
